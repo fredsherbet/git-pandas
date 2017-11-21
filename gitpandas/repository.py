@@ -315,7 +315,7 @@ class Repository(object):
 
         return df
 
-    def file_change_history(self, branch='master', limit=None, days=None, ignore_globs=None, include_globs=None):
+    def file_change_history(self, branch='master', limit=None, days=None, ignore_globs=None, include_globs=None, **kwargs):
         """
         Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
         the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
@@ -334,6 +334,7 @@ class Repository(object):
         :param days: (optional, default=None) number of days to return if limit is None
         :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
         :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
+        :param \**kwargs: Arguments to be passed to git-rev-list
         :return: DataFrame
         """
 
@@ -347,11 +348,11 @@ class Repository(object):
                           x.message,
                           x.name_rev.split()[0],
                           self.__check_extension(x.stats.files, ignore_globs=ignore_globs, include_globs=include_globs)
-                      ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
+                      ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize, **kwargs)]
             else:
                 ds = []
                 c_date = time.time()
-                commits = self.repo.iter_commits(branch, max_count=sys.maxsize)
+                commits = self.repo.iter_commits(branch, max_count=sys.maxsize, **kwargs)
                 dlim = time.time() - days * 24 * 3600
                 while c_date > dlim:
                     try:
@@ -382,7 +383,7 @@ class Repository(object):
                       x.message,
                       x.name_rev.split()[0],
                       self.__check_extension(x.stats.files, ignore_globs=ignore_globs, include_globs=include_globs)
-                  ] for x in self.repo.iter_commits(branch, max_count=limit)]
+                  ] for x in self.repo.iter_commits(branch, max_count=limit, **kwargs)]
 
         ds = [x[:-1] + [fn, x[-1][fn]['insertions'], x[-1][fn]['deletions']] for x in ds for fn in x[-1].keys() if
               len(x[-1].keys()) > 0]
