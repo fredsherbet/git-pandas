@@ -325,6 +325,8 @@ class Repository(object):
          * author
          * committer
          * message
+         * commit hash
+         * commit parents
          * filename
          * insertions
          * deletions
@@ -346,6 +348,7 @@ class Repository(object):
                           x.committed_date,
                           x.message,
                           x.name_rev.split()[0],
+                          len(x.parents),
                           self.__check_extension(x.stats.files, ignore_globs=ignore_globs, include_globs=include_globs)
                       ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
             else:
@@ -370,6 +373,7 @@ class Repository(object):
                             x.committed_date,
                             x.message,
                             x.name_rev.split()[0],
+                            len(x.parents),
                             self.__check_extension(x.stats.files, ignore_globs=ignore_globs,
                                                    include_globs=include_globs)
                         ])
@@ -381,6 +385,7 @@ class Repository(object):
                       x.committed_date,
                       x.message,
                       x.name_rev.split()[0],
+                      len(x.parents),
                       self.__check_extension(x.stats.files, ignore_globs=ignore_globs, include_globs=include_globs)
                   ] for x in self.repo.iter_commits(branch, max_count=limit)]
 
@@ -389,7 +394,7 @@ class Repository(object):
 
         # make it a pandas dataframe
         df = DataFrame(ds,
-                       columns=['author', 'committer', 'date', 'message', 'rev', 'filename', 'insertions', 'deletions'])
+                       columns=['author', 'committer', 'date', 'message', 'rev', 'parents', 'filename', 'insertions', 'deletions'])
 
         # format the date col and make it the index
         df['date'] = to_datetime(df['date'].map(datetime.datetime.fromtimestamp))
