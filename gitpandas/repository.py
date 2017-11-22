@@ -315,6 +315,11 @@ class Repository(object):
 
         return df
 
+    @multicache(
+        key_prefix='file_change_history',
+        key_list=['branch', 'limit', 'days', 'ignore_blobs', 'include_globs'],
+        skip_if=lambda x: True if x.get('branch') is None or x.get('branch') == 'master' else False
+    )
     def file_change_history(self, branch='master', limit=None, days=None, ignore_globs=None, include_globs=None, **kwargs):
         """
         Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
